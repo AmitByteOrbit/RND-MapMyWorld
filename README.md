@@ -2,4 +2,4 @@
 
 Project submission
 
-![Directory Tree](/images/Dir_tree.png)
+![Directory Tree](/images/Dir_Tree.png)
