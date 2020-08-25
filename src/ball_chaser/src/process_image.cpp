@@ -3,27 +3,12 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 
-//#include "pcl_ros/point_cloud.h"
-
-//#include <pcl/search/impl/search.hpp>
+/**
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
-//#include <pcl/point_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
-//#include <pcl/segmentation/extract_clusters.h>
+**/
 
-
-// #include <pcl/filters/extract_indices.h>
-// #include <pcl/PointIndices.h>
-// #include <pcl/io/ply_io.h>
-// #include <pcl/io/pcd_io.h>
-// #include <pcl/search/kdtree.h>
-
-// #include <pcl/filters/voxel_grid.h>
-// #include <pcl/filters/radius_outlier_removal.h>
-
-
-//#include <pcl/point_cloud.h>
 
 // Define a global client that can request services
 ros::ServiceClient client;
@@ -49,6 +34,7 @@ void process_image_callback(const sensor_msgs::Image img)
     int white_pixel = 255;
     int pixel_pos = -1;
     
+    // Iterate throught the pixels looking for perfect white.
     for (int i = 0; i < img.height * img.step; i++) {
     	if (img.data[i] == white_pixel) {
     		pixel_pos = i % img.step;
@@ -56,6 +42,7 @@ void process_image_callback(const sensor_msgs::Image img)
     	}
     }
     
+    // Change angle or velocity as required. Dividing the width into three parts and using 45 degree turning angles.
     if (pixel_pos >= 0) {
     	if (pixel_pos < img.step/3) {
     		//go left
@@ -77,40 +64,11 @@ void process_image_callback(const sensor_msgs::Image img)
      
 }
 
+/**
+// Find ball of any color using point clouds -- work in progress
 void process_pointcloud_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
-	//ROS_INFO("In point cloud callback");
-	/**
-	pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGBNormal>);
-	pcl::fromROSMsg (*cloud_msg, *cloud);
-	
-	pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-	pcl::SACSegmentationFromNormals<pcl::PointXYZRGBNormal, pcl::PointXYZRGBNormal> segmentation;
-	
-	segmentation.setInputCloud(cloud);
-	segmentation.setInputNormals(cloud);
-	segmentation.setModelType(pcl::SACMODEL_NORMAL_SPHERE);
-	segmentation.setMethodType(pcl::SAC_RANSAC);
-	segmentation.setDistanceThreshold(1.25);
-	segmentation.setNormalDistanceWeight(0.1);
-	segmentation.setOptimizeCoefficients(true);
-	segmentation.setRadiusLimits(20,21);
-	segmentation.setEpsAngle(1 / (180/3.141592654));
-	segmentation.setMaxIterations(10000);
-	
-	pcl::PointIndices::Ptr indx(new pcl::PointIndices());
-	segmentation.segment(*indx, *coefficients);	
-	
-	if (indx->indices.size() == 0)
-     std::cout << ". RANSAC nothing found" << "\n";
-    else
-    {
-      std::cout << ". RANSAC found shape with [%d] points:" << indx->indices.size() << "\n";
-      double part = (double)indx->indices.size() / (double) cloud->points.size() * 100;
-      std::cout << ". Model coefficient: " << *coefficients << std::endl << "Points: " << indx->indices.size() << " ("<< part <<"%)" << std::endl;
-    }
-    **/
-    
+	    
     // Convert the sensor_msgs/PointCloud2 data to pcl/PointCloud
 	pcl::PointCloud<pcl::PointXYZ> cloud;
 	pcl::fromROSMsg (*cloud_msg, cloud);
@@ -124,7 +82,7 @@ void process_pointcloud_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_m
 	// Mandatory
 	seg.setModelType (pcl::SACMODEL_SPHERE);
 	seg.setMethodType (pcl::SAC_RANSAC);
-	seg.setDistanceThreshold (0.1);
+	seg.setDistanceThreshold (0.01);
 
 	seg.setInputCloud (cloud.makeShared ());
 	seg.segment (inliers, coefficients);
@@ -141,11 +99,12 @@ void process_pointcloud_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_m
     else
     {
       std::cout << ". RANSAC found shape with [%d] points:" << indx->indices.size() << "\n";
+      std::cout << "Coefficients: " << ros_coefficients << "\n";
     }
 
 }
 
-
+**/
 
 
 int main(int argc, char** argv)
@@ -160,8 +119,8 @@ int main(int argc, char** argv)
     // Subscribe to /camera/rgb/image_raw topic to read the image data inside the process_image_callback function
     ros::Subscriber sub1 = n.subscribe("/camera/rgb/image_raw", 10, process_image_callback);
     
-    // Create a ROS subscriber for the input point cloud
-	ros::Subscriber sub2 = n.subscribe ("/camera/depth/points", 10, process_pointcloud_callback);
+    // Create a ROS subscriber for the input point cloud - work in progress
+	//ros::Subscriber sub2 = n.subscribe ("/camera/depth/points", 10, process_pointcloud_callback);
 
     // Handle ROS communication events
     ros::spin();

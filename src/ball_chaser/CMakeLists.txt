@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
- find_package( PCL REQUIRED )
+# find_package( PCL REQUIRED )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -119,11 +119,11 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-set(PCL_INCLUDE_DIRS /usr/local/include/pcl-1.11 /usr/include/eigen3/)
+#set(PCL_INCLUDE_DIRS /usr/local/include/pcl-1.11 /usr/include/eigen3/)
 
 include_directories(
 # include
-  ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS} # ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -211,15 +211,16 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-set(PCL_LIBRARY_DIRS /usr/local/include/pcl-1.11)
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
+#set(PCL_LIBRARY_DIRS /usr/local/include/pcl-1.11)
+#link_directories(${PCL_LIBRARY_DIRS})
+#add_definitions(${PCL_DEFINITIONS})
 
 add_executable(drive_bot src/drive_bot.cpp)
 target_link_libraries(drive_bot ${catkin_LIBRARIES})
 add_dependencies(drive_bot ball_chaser_generate_messages_cpp)
 
 add_executable(process_image src/process_image.cpp)
-target_link_libraries(process_image ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
+#target_link_libraries(process_image ${catkin_LIBRARIES} ${PCL_LIBRARIES} )
+target_link_libraries(process_image ${catkin_LIBRARIES} )
 add_dependencies(process_image ball_chaser_generate_messages_cpp)
 
