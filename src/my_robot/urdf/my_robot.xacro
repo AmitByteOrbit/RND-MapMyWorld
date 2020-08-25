@@ -1,0 +1,301 @@
+<?xml version='1.0'?>
+
+<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- variables-->
+  <xacro:property name="length_wheel" value="0.05"/>
+  <xacro:property name="radius_wheel" value="0.07"/>
+  <xacro:property name="base_heigth" value="0.05"/>
+  <xacro:property name="base_width" value="0.3"/>
+  <xacro:property name="base_length" value="0.4"/>
+  <xacro:property name="wheel_body_space" value="0.14"/>
+
+  <link name="robot_footprint"></link>
+  
+  <xacro:include filename="$(find my_robot)/urdf/my_robot.gazebo" />
+
+  <joint name="robot_footprint_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="robot_footprint"/>
+    <child link="chassis" />
+  </joint>
+
+  <link name='chassis'>
+    <pose>0 0 0.1 0 0 0</pose>
+
+    <inertial>
+      <mass value="15.0"/>
+      <origin xyz="0.0 0 0" rpy=" 0 0 0"/>
+      <inertia
+          ixx="0.1" ixy="0" ixz="0"
+          iyy="0.1" iyz="0"
+          izz="0.1"
+      />
+    </inertial>
+
+    <collision name='collision'>
+      <origin xyz="0 0 0" rpy=" 0 0 0"/> 
+      <geometry>
+        <box size="${base_length} ${base_width} ${base_heigth}"/>
+      </geometry>
+    </collision>
+
+    <visual name='chassis_visual'>
+      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <geometry>
+        <box size="${base_length} ${base_width} ${base_heigth}"/>
+      </geometry>
+    </visual>
+
+  </link>
+  
+  <link name="left_rear_wheel">
+  	
+  	<inertial>
+      <mass value="5.0"/>
+      <origin xyz="0.0 0 0" rpy=" 0 0 0"/>
+      <inertia
+          ixx="0.1" ixy="0" ixz="0"
+          iyy="0.1" iyz="0"
+          izz="0.1"
+      />
+    </inertial>
+    
+    
+  	<collision name='left_rear_wheel_collision'>
+  		<origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+		<geometry>
+			<cylinder length="${length_wheel}" radius="${radius_wheel}"/>
+		</geometry>
+  	</collision>
+  	
+  	<visual name='left_rear_wheel_visual'>
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder length="${length_wheel}" radius="${radius_wheel}"/>
+      </geometry>
+    </visual>
+    
+  </link>
+  
+	<joint type="continuous" name="left_rear_wheel_hinge">
+		<origin xyz="-${base_length/4} ${wheel_body_space} 0" rpy="0 0 0"/>
+		<child link="left_rear_wheel"/>
+		<parent link="chassis"/>
+		<axis xyz="0 1 0" rpy="0 0 0"/>
+		<limit effort="10000" velocity="1000"/>
+		<dynamics damping="1.0" friction="1.0"/>
+	</joint>
+	
+	<link name="left_front_wheel">
+  	
+  	<inertial>
+      <mass value="5.0"/>
+      <origin xyz="0.0 0 0" rpy=" 0 0 0"/>
+      <inertia
+          ixx="0.1" ixy="0" ixz="0"
+          iyy="0.1" iyz="0"
+          izz="0.1"
+      />
+    </inertial>
+    
+    
+  	<collision name='left_front_wheel_collision'>
+  		<origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+		<geometry>
+			<cylinder length="${length_wheel}" radius="${radius_wheel}"/>
+		</geometry>
+  	</collision>
+  	
+  	<visual name='left_front_wheel_visual'>
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder length="${length_wheel}" radius="${radius_wheel}"/>
+      </geometry>
+    </visual>
+    
+  </link>
+  
+	<joint type="continuous" name="left_front_wheel_hinge">
+		<origin xyz="${base_length/4} ${wheel_body_space} 0" rpy="0 0 0"/>
+		<child link="left_front_wheel"/>
+		<parent link="chassis"/>
+		<axis xyz="0 1 0" rpy="0 0 0"/>
+		<limit effort="10000" velocity="1000"/>
+		<dynamics damping="1.0" friction="1.0"/>
+	</joint>
+	
+	<link name="right_rear_wheel">
+  	
+	  	<inertial>
+		  <mass value="5.0"/>
+		  <origin xyz="0.0 0 0" rpy=" 0 0 0"/>
+		  <inertia
+		      ixx="0.1" ixy="0" ixz="0"
+		      iyy="0.1" iyz="0"
+		      izz="0.1"
+		  />
+		</inertial>
+		
+		
+	  	<collision name='right_rear_wheel_collision'>
+	  		<origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+			<geometry>
+				<cylinder length="${length_wheel}" radius="${radius_wheel}"/>
+			</geometry>
+	  	</collision>
+	  	
+	  	<visual name='right_rear_wheel_visual'>
+		  <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+		  <geometry>
+		    <cylinder length="${length_wheel}" radius="${radius_wheel}"/>
+		  </geometry>
+		</visual>
+    
+	</link>
+  
+	<joint type="continuous" name="right_rear_wheel_hinge">
+		<origin xyz="-${base_length/4} -${wheel_body_space} 0" rpy="0 0 0"/>
+		<child link="right_rear_wheel"/>
+		<parent link="chassis"/>
+		<axis xyz="0 1 0" rpy="0 0 0"/>
+		<limit effort="10000" velocity="1000"/>
+		<dynamics damping="1.0" friction="1.0"/>
+	</joint>
+	
+	<link name="right_front_wheel">
+  	
+	  	<inertial>
+		  <mass value="5.0"/>
+		  <origin xyz="0.0 0 0" rpy=" 0 0 0"/>
+		  <inertia
+		      ixx="0.1" ixy="0" ixz="0"
+		      iyy="0.1" iyz="0"
+		      izz="0.1"
+		  />
+		</inertial>
+		
+		
+	  	<collision name='right_front_wheel_collision'>
+	  		<origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+			<geometry>
+				<cylinder length="${length_wheel}" radius="${radius_wheel}"/>
+			</geometry>
+	  	</collision>
+	  	
+	  	<visual name='right_front_wheel_visual'>
+		  <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+		  <geometry>
+		    <cylinder length="${length_wheel}" radius="${radius_wheel}"/>
+		  </geometry>
+		</visual>
+    
+	</link>
+  
+	<joint type="continuous" name="right_front_wheel_hinge">
+		<origin xyz="${base_length/4} -${wheel_body_space} 0" rpy="0 0 0"/>
+		<child link="right_front_wheel"/>
+		<parent link="chassis"/>
+		<axis xyz="0 1 0" rpy="0 0 0"/>
+		<limit effort="10000" velocity="1000"/>
+		<dynamics damping="1.0" friction="1.0"/>
+	</joint>
+	
+	<link name="camera">
+
+	  	<inertial>
+		  <mass value="0.1"/>
+		  <origin xyz="0.05 0.05 0.05" rpy=" 0 0 0"/>
+		  <inertia
+		      ixx="1e-6" ixy="0" ixz="0"
+		      iyy="1e-6" iyz="0"
+		      izz="1e-6"
+		  />
+		</inertial>
+		
+	  	<collision name='camera_collision'>
+	  		<origin xyz="0 0 0" rpy=" 0 0 0"/>
+			<geometry>
+				<box size="0.07 0.3 0.09"/>
+			</geometry>
+	  	</collision>
+	  	
+	  	<visual name='camera_visual'>
+		  <origin xyz="0 0 0" rpy=" 0 0 0"/>
+		  <geometry>
+		    <mesh filename="package://my_robot/meshes/kinect.dae"/>
+		  </geometry>
+		</visual>
+    
+	</link>
+	
+	<joint name="camera_optical_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+            <parent link="camera"/>
+            <child link="camera_frame_optical"/>
+        </joint>
+        <link name="camera_frame_optical"/>
+  
+	<joint type="fixed" name="camera-joint">
+		<origin xyz="0.25 0 0.05" rpy="0 0 0"/>
+		<child link="camera"/>
+		<parent link="chassis"/>
+		<axis xyz="0 1 0" rpy="0 0 0"/>
+	</joint>
+  
+	<link name="hokuyo">
+  	
+	  	<inertial>
+		  <mass value="1e-5"/>
+		  <origin xyz="0 0 0" rpy=" 0 0 0"/>
+		  <inertia
+		      ixx="1e-6" ixy="0" ixz="0"
+		      iyy="1e-6" iyz="0"
+		      izz="1e-6"
+		  />
+		</inertial>
+		
+	  	<collision name='hokuyo_collision'>
+	  		<origin xyz="0 0 0" rpy=" 0 0 0"/>
+			<geometry>
+				<box size="0.1 0.1 0.1"/>
+			</geometry>
+	  	</collision>
+	  	
+	  	<visual name='hokuyo_visual'>
+		  <origin xyz="0 0 0" rpy=" 0 0 0"/>
+		  <geometry>
+		    <mesh filename="package://my_robot/meshes/hokuyo.dae"/>
+		  </geometry>
+		</visual>
+    
+	</link>
+  
+	<joint type="fixed" name="hokuyo-joint">
+		<origin xyz="0.15 0 0.1" rpy="0 0 0"/>
+		<child link="hokuyo"/>
+		<parent link="chassis"/>
+		<axis xyz="0 1 0" rpy="0 0 0"/>
+	</joint>
+	
+	<gazebo reference="left_rear_wheel">
+		<material>Gazebo/Black</material>
+	</gazebo>
+	
+	<gazebo reference="right_rear_wheel">
+		<material>Gazebo/Black</material>
+	</gazebo>
+	
+	<gazebo reference="left_front_wheel">
+		<material>Gazebo/Black</material>
+	</gazebo>
+	
+	<gazebo reference="right_front_wheel">
+		<material>Gazebo/Black</material>
+	</gazebo>
+	
+	<gazebo reference="chassis">
+		<material>Gazebo/Blue</material>
+	</gazebo>
+	
+</robot>
