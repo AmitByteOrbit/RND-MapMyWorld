@@ -35,8 +35,9 @@ void process_image_callback(const sensor_msgs::Image img)
     int pixel_pos = -1;
     
     // Iterate throught the pixels looking for perfect white.
-    for (int i = 0; i < img.height * img.step; i++) {
-    	if (img.data[i] == white_pixel) {
+    for (int i = 0; i < img.height * img.step; i+=3) {
+    	
+    	if (img.data[i] == white_pixel && img.data[i+1] == white_pixel && img.data[i+2] == white_pixel) {
     		pixel_pos = i % img.step;
     		break;
     	}
