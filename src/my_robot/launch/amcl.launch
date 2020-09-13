@@ -8,7 +8,7 @@
   
   <!-- AMCL node -->
   <node pkg="amcl" type="amcl" name="amcl" output="screen">
-  	<remap from="scan" to="myrobot/laser/scan"/>
+  	<remap from="scan" to="my_robot/laser/scan"/>
   	<param name="odom_frame_id" value="odom"/>
 	<param name="odom_model_type" value="diff-corrected"/>
 	<param name="base_frame_id" value="robot_footprint"/>
@@ -16,6 +16,8 @@
   
   	<param name="initial_pose_x" value="4.8"/>
     <param name="initial_pose_y" value="2.2"/>
+    
+    <param name="transform_tolerance" value="1.0"/>
   </node>
 
   <!-- Move_Base node --> 
@@ -31,5 +33,7 @@
 	<rosparam file="$(find my_robot)/config/base_local_planner_params.yaml" command="load" />
   </node>
   
+  <!--launch rviz  >
+  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find my_robot)/launch/project.rviz"/-->
   
 </launch>
