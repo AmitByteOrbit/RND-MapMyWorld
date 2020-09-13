@@ -17,10 +17,9 @@
   	<param name="initial_pose_x" value="4.8"/>
     <param name="initial_pose_y" value="2.2"/>
     
-    <param name="transform_tolerance" value="1.0"/>
   </node>
 
-  <!-- Move_Base node --> 
+  <!-- Move_Base node  
   <node pkg="move_base" type="move_base" name="move_base" respawn="false" output="screen" >
 	<remap from="scan" to="my_robot/laser/scan"/>  
 	<param name="base_global_planner" value="navfn/NavfnROS" />
@@ -31,9 +30,9 @@
 	<rosparam file="$(find my_robot)/config/local_costmap_params.yaml" command="load" />
 	<rosparam file="$(find my_robot)/config/global_costmap_params.yaml" command="load" />
 	<rosparam file="$(find my_robot)/config/base_local_planner_params.yaml" command="load" />
-  </node>
+  </node> -->
   
-  <!--launch rviz  >
-  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find my_robot)/launch/project.rviz"/-->
+  <!--launch rviz -->
+  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find my_robot)/launch/project.rviz"/>
   
 </launch>
