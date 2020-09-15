@@ -4,218 +4,130 @@
 
 ### File checklist
 All files submitted.
+There are two launch files that need to my run under the `my_robot` package.
+First run `roslaunch my_robot world.launch` then `roslaunch my_robot amcl.launch`
 
 <img src="/images/directory_tree.png" width="300">
 
-### Localized Robot In RVIZ
+### Screenshots in Rviz
+<p align="center"><img src="/images/Rviz1.png" width="800"></p>
+<p align="center"><img src="/images/Rviz2.png" width="800"></p>
+<p align="center"><img src="/images/Rviz3.png" width="800"></p>
+
+### The Robot loaded in Gazebo
+The robot from the previous project was utilized here. I did have to adjust the world so that the origin (0,0) was not on anything.
+<p align="center"><img src="/images/robot_gz.png" width="600"></p>
+
+### Landmarks and settings
+Generated the PGM file and associated the corrected messages for localisation.
+<p align="center"><img src="/images/map.png" width="600"></p>
+<p align="center"><img src="/images/Rviz-tools.png" width="300"></p>
 
 
-### Robot Design
-![Robot](/images/robot.png)
-#### Lidar and camera sensors.
-I have used the Hokuyo Lidar with the Kinect Camera. I wanted to use point clouds for the ball detection but ran out of time. Luckily the camera worked well :)
+### Launch File Setup
 
-#### Gazebo plugins for the robot’s differential drive, lidar, and camera.
-I have used the `skid_steer_drive_controller` with four wheels.
+I've setup my launch file to include a few of the additional laser settings. I've also elected to rather launch my RViz package from here along with the saved Rviz config. Here is the AMCL launch file.
 
-#### Housed inside the world
-I have used the world from my previous project. 
-
-#### Significant changes from the sample taught in the project lesson.
-I think it is much different from the sample taught in the project lesson :)
-
-#### Robot is stable when moving
-yes
-
-### Gazebo World
-The same as from my previous project with the white ball insterted. See picture below:
-![World](/images/world.png)
-
-### Ball Chasing
-The following criteria is met by the code below:
-
-* A ball_chaser/command_robot service.
-* Service accepts linear x and angular z velocities.
-* Service publishes to the the wheel joints.
-* Service returns the requested velocities.
-
-```C++
-bool handle_drive_request(ball_chaser::DriveToTarget::Request& req,
-    ball_chaser::DriveToTarget::Response& res)
-{
-
-//    ROS_INFO("DriveToTarget received - linear_x:%1.2f, angular_z:%1.2f", (float)req.linear_x, (float)req.angular_z);
-
-    // Create a motor_command object of type geometry_msgs::Twist
-    geometry_msgs::Twist motor_command;
-    // Set wheel velocities, forward
-    motor_command.linear.x = req.linear_x;
-    // Set angles to drive the robot
-    motor_command.angular.z = req.angular_z;
-    
-    // Publish angle and velcoity to drive the robot
-    motor_command_publisher.publish(motor_command);
-
-    // Return a response message
-    res.msg_feedback = "Drive velocities set - linear_x: " + std::to_string(req.linear_x) + " , angular_z: " + std::to_string(req.angular_z);
-//    ROS_INFO_STREAM(res.msg_feedback);
-
-    return true;
-}
-```
-
-The following criteria has been met by the `process_image` class:
-
-Subscribes to the robot’s camera image.
-A function to analyze the image and determine the presence and position of a white ball.
-Requests a service to drive the robot towards a white ball (when present).
-
-```C++
-
-/ This callback function continuously executes and reads the image data
-void process_image_callback(const sensor_msgs::Image img)
-{
-
-    int white_pixel = 255;
-    int pixel_pos = -1;
-    
-    // Iterate throught the pixels looking for perfect white.
-    for (int i = 0; i < img.height * img.step; i++) {
-    	if (img.data[i] == white_pixel) {
-    		pixel_pos = i % img.step;
-    		break;
-    	}
-    }
-    
-    // Change angle or velocity as required. Dividing the width into three parts and using 45 degree turning angles.
-    if (pixel_pos >= 0) {
-    	if (pixel_pos < img.step/3) {
-    		//go left
-    		ROS_INFO("Moving left with pix pos: %d of %d", pixel_pos, img.step);
-    		drive_robot(0.0, 0.78);
-    	} else if (pixel_pos > 2*img.step/3) {
-    		//go right
-    		ROS_INFO("Moving right with pix pos: %d of %d", pixel_pos, img.step);
-    		drive_robot(0.0, -0.78);
-    	} else {
-    		// go straight
-    		drive_robot(0.5, 0.0);
-    	}
-    	
-    } else {
-    // stop moving
-    drive_robot(0.0, 0.0);
-    }
-     
-}
-```
-
-I also tried to get the point clouds operational from the Kinect camera. This was in an effort to detect any ball color. I came close but ran out of time. In the snippet below I get the coefficients but unfortunately need a bit more time to translate them into angular movements. (I have commented this out in the code and also the required PCL dependencies in the CMAKE file to make it easier to compile my code without installing PCL).
-
-```C++
-/ Find ball of any color using point clouds -- work in progress
-void process_pointcloud_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
-{
-	    
-    // Convert the sensor_msgs/PointCloud2 data to pcl/PointCloud
-	pcl::PointCloud<pcl::PointXYZ> cloud;
-	pcl::fromROSMsg (*cloud_msg, cloud);
-
-	pcl::ModelCoefficients coefficients;
-	pcl::PointIndices inliers;
-	// Create the segmentation object
-	pcl::SACSegmentation<pcl::PointXYZ> seg;
-	// Optional
-	seg.setOptimizeCoefficients (true);
-	// Mandatory
-	seg.setModelType (pcl::SACMODEL_SPHERE);
-	seg.setMethodType (pcl::SAC_RANSAC);
-	seg.setDistanceThreshold (0.01);
-
-	seg.setInputCloud (cloud.makeShared ());
-	seg.segment (inliers, coefficients);
-
-	// Publish the model coefficients
-	pcl_msgs::ModelCoefficients ros_coefficients;
-	pcl_conversions::fromPCL(coefficients, ros_coefficients);
-	
-	pcl::PointIndices::Ptr indx(new pcl::PointIndices());
-	seg.segment(*indx, coefficients);	
-	
-	if (indx->indices.size() == 0)
-     std::cout << ". RANSAC nothing found" << "\n";
-    else
-    {
-      std::cout << ". RANSAC found shape with [%d] points:" << indx->indices.size() << "\n";
-      std::cout << "Coefficients: " << ros_coefficients << "\n";
-    }
-
-}
-```
-
-### Launch Files
-`world.launch`
 ``` XML
 <?xml version="1.0" encoding="UTF-8"?>
-
 <launch>
 
-  <!-- Robot pose -->
-  <arg name="x" default="4.8"/>
-  <arg name="y" default="2.2"/>
-  <arg name="z" default="0.1"/>
-  <arg name="roll" default="0"/>
-  <arg name="pitch" default="0"/>
-  <arg name="yaw" default="0"/>
+  <arg name="map_file" default="$(find my_robot)/maps/map.yaml"/>
 
-  <!-- Launch other relevant files-->
-  <include file="$(find my_robot)/launch/robot_description.launch"/>
-
-  <!-- World File -->
-  <arg name="world_file" default="$(find my_robot)/worlds/my.world"/>
-
-  <!-- Launch Gazebo World -->
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="use_sim_time" value="true"/>
-    <arg name="debug" value="false"/>
-    <arg name="gui" value="true" />
-    <arg name="world_name" value="$(arg world_file)"/>
-  </include>
+  <!-- Run the map server -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
   
-  
-  <!-- Find my robot Description-->
-  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find my_robot)/urdf/my_robot.xacro'"/>
+  <!-- AMCL node -->
+  <node pkg="amcl" type="amcl" name="amcl" output="screen">
+  	<remap from="scan" to="my_robot/laser/scan"/>
 
-  <!-- Spawn My Robot -->
-  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" 
-        args="-urdf -param robot_description -model my_robot 
-              -x $(arg x) -y $(arg y) -z $(arg z)
-              -R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"/>
-  
-  <!--launch rviz  -->
-  <node name="rviz" pkg="rviz" type="rviz" respawn="false"/>
+	<!-- Overall Filter -->
+	<param name="min_particles" value="50"/>
+	<param name="max_particles" value="200"/>
+	<param name="update_min_a" value="0.1"/>
+	<param name="update_min_d" value="0.25"/>
 
- 
+  	<param name="initial_pose_x" value="0.0"/>
+    	<param name="initial_pose_y" value="0.0"/>
+	<param name="initial_pose_a" value="-1.57"/>
+
+	<!-- Laser -->
+	<param name="laser_max_beams" value="20"/>
+	<param name="laser_z_rand" value="0.05"/>
+	<param name="laser_z_hit" value="0.95"/>
+
+	<!-- Odometry configs as per project outline -->
+  	<param name="odom_frame_id" value="odom"/>
+	<param name="odom_model_type" value="diff-corrected"/>
+	<param name="base_frame_id" value="robot_footprint"/>
+	<param name="global_frame_id" value="map"/>
+  
+
+    
+  </node>
+
+  <!-- Move_Base node  -->
+  <node pkg="move_base" type="move_base" name="move_base" respawn="false" output="screen" >
+
+	<remap from="scan" to="my_robot/laser/scan"/>  
+
+	<param name="base_global_planner" value="navfn/NavfnROS" />
+	<param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
+	
+	<rosparam file="$(find my_robot)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+	<rosparam file="$(find my_robot)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+	<rosparam file="$(find my_robot)/config/local_costmap_params.yaml" command="load" />
+	<rosparam file="$(find my_robot)/config/global_costmap_params.yaml" command="load" />
+	<rosparam file="$(find my_robot)/config/base_local_planner_params.yaml" command="load" />
+  </node> 
+  
+  <!--launch rviz -->
+  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find my_robot)/launch/project.rviz"/>
   
 </launch>
 ```
 
-`ball_chaser.launch`
-``` XML
-<launch>
-
- <!-- The drive_bot node -->
-  <node name="drive_bot" type="drive_bot" pkg="ball_chaser" output="screen">
-  </node>
-  
-  <node name="process_image" type="process_image" pkg="ball_chaser" output="screen">
-  </node>
-
-</launch>
+### Config file updates
+In the `base_local_planner_params.yaml` I changed the min and max velocities as well as the pdist and gdist weightings to get more accuracy with the path planner.
 ```
+max_vel_x: 0.6 #0.5
+min_vel_x: 0.01 #0.01
+...
+pdist_scale: 2.5  #0.6
+gdist_scale: 2.5  #0.8
+occdist_scale: 0.1 #0.02
+```
+In the `costmap_common_params.yaml` I played with the laser scanning distance, the radius of the robot and the inflation radius for guidance, and obstacle avoidance.
+```
+obstacle_range: 2.5 # 2.0
+raytrace_range: 3.0 # 3.0
+
+transform_tolerance: 0.4 # 0.0
+
+robot_radius: 0.5 # 0.0
+inflation_radius: 0.4 # 0.0
+```
+In the `global_costmap_params.yaml` I changed the update and publish frequencies for better performance and to avoid the "missed loop" error.
+```
+update_frequency: 5.0
+publish_frequency: 2.0
+```
+   
+Lastly in the `local_costmap_params.yaml` I changes the update frequencies and the map size to optimize the short-term planning for the robot.
+```
+update_frequency: 5.0
+publish_frequency: 2.0
+width: 6.0
+height: 6.0
+```
+
+### Obstacle avoidance
+Utilizing good configurations for `radius, inflation radius, pdist and gdist` the robot avoid obstacles.
+<p align="center"><img src="/images/avoid2.png" width="600"></p>
+
 
 ## It works!!! :)
-![Robot](/images/robot_demo.gif)
+![Robot](/images/demo.gif)
 
 
 
