@@ -5,7 +5,7 @@
 ### File checklist
 All files submitted.
 
-![Directory Tree](/images/directory_tree.png)
+![Directory Tree](/images/directory_tree.png | WIDTH=200) 
 
 ### Localized Robot In RVIZ
 
