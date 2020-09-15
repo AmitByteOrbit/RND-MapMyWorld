@@ -7,6 +7,9 @@ All files submitted.
 
 ![Directory Tree](/images/directory_tree.png)
 
+### Localized Robot In RVIZ
+
+
 ### Robot Design
 ![Robot](/images/robot.png)
 #### Lidar and camera sensors.
