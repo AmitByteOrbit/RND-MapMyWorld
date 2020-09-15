@@ -1,11 +1,11 @@
-# RND-GoChaseIt
+# RND-Where Am I
 
 ## Project submission
 
 ### File checklist
-All files submitted according to the prescribed directory structure.
+All files submitted.
 
-![Directory Tree](/images/Dir_Tree.png)
+![Directory Tree](/images/directory_tree.png)
 
 ### Robot Design
 ![Robot](/images/robot.png)
