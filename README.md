@@ -126,8 +126,14 @@ Utilizing good configurations for `radius, inflation radius, pdist and gdist` th
 <p align="center"><img src="/images/avoid2.png" width="600"></p>
 
 
-## It works!!! :)
+### It works!!! :)
 ![Robot](/images/demo.gif)
 
+
+###References
+ROS Wiki
+http://wiki.ros.org/amcl
+http://wiki.ros.org/navigation/Tutorials/RobotSetup
+http://wiki.ros.org/base_local_planner
 
 
