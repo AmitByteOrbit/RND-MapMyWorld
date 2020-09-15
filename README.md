@@ -122,7 +122,7 @@ height: 6.0
 ```
 
 ### Obstacle avoidance
-Utilizing good configurations for `radius, inflation radius, pdist and gdist` the robot avoid obstacles.
+Utilizing good configurations for `radius, inflation radius, pdist and gdist` and then setting up the Costmap PointCloud in RVIZ the robot is able to avoid obstacles.
 <p align="center"><img src="/images/avoid2.png" width="600"></p>
 
 
