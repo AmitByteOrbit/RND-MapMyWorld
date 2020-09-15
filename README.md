@@ -131,9 +131,9 @@ Utilizing good configurations for `radius, inflation radius, pdist and gdist` th
 
 
 ###References
-ROS Wiki
-http://wiki.ros.org/amcl
-http://wiki.ros.org/navigation/Tutorials/RobotSetup
-http://wiki.ros.org/base_local_planner
+ROS Wiki</br>
+http://wiki.ros.org/amcl</br>
+http://wiki.ros.org/navigation/Tutorials/RobotSetup</br>
+http://wiki.ros.org/base_local_planner</br>
 
 
