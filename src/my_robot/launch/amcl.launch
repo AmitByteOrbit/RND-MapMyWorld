@@ -13,15 +13,17 @@
 	<!-- Overall Filter -->
 	<param name="min_particles" value="50"/>
 	<param name="max_particles" value="200"/>
+	
 	<param name="update_min_a" value="0.1"/>
-	<param name="update_min_d" value="0.25"/>
+	<param name="update_min_d" value="0.1"/>
+	<param name="transform_tolerance" value="0.15"/>
 
   	<param name="initial_pose_x" value="0.0"/>
     	<param name="initial_pose_y" value="0.0"/>
 	<param name="initial_pose_a" value="-1.57"/>
 
 	<!-- Laser -->
-	<param name="laser_max_beams" value="20"/>
+	<param name="laser_max_beams" value="30"/>
 	<param name="laser_z_rand" value="0.05"/>
 	<param name="laser_z_hit" value="0.95"/>
 
@@ -30,6 +32,11 @@
 	<param name="odom_model_type" value="diff-corrected"/>
 	<param name="base_frame_id" value="robot_footprint"/>
 	<param name="global_frame_id" value="map"/>
+
+	<!-- <param name="odom_alpha1" value="0.05" /> rotation estimate from rotational movement -->
+	<param name="odom_alpha2" value="0.05" /> <!-- rotation estimate from transational movement -->
+	<param name="odom_alpha3" value="0.05" /> <!-- translation estimate from transational movement -->
+	<!-- <param name="odom_alpha4" value="0.1" />  translation estimate from rotational movement -->
   
 
     
