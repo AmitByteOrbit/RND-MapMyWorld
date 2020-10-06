@@ -1,139 +1,133 @@
-# RND-Where Am I
+# RND-Map My World
 
 ## Project submission
 
-### File checklist
-All files submitted.
+### File list
 There are two launch files that need to my run under the `my_robot` package.
-First run `roslaunch my_robot world.launch` then `roslaunch my_robot amcl.launch`
+First run `roslaunch my_robot world.launch` then `roslaunch my_robot mapping.launch`
+Lastly run `rosrun teleop_twist_keyboard teleop_twist_keyboard.py` to launch the teleop interface.
 
-<img src="/images/directory_tree.png" width="300">
+Please note if you are running the `nouveau` graphics driver you will have to change to lines on the gazebo file as follows:
+Open `my_robot.gazebo` located in `src/my_robot/urdf/`
+Under `hokuyo` change `<sensor type="gpu_ray" name="head_hokuyo_sensor">` to `<sensor type="ray" name="head_hokuyo_sensor">` and <br>
+` <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_gpu_laser.so">` to `<plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">`
 
-### Screenshots in Rviz
-<p align="center"><img src="/images/Rviz1.png" width="800"></p>
-<p align="center"><img src="/images/Rviz2.png" width="800"></p>
-<p align="center"><img src="/images/Rviz3.png" width="800"></p>
+Link to DB file (850MB): https://drive.google.com/file/d/1SJG9JY3AdsrXNtcBuzyctamy2Mqxkkr8/view?usp=sharing
 
-### The Robot loaded in Gazebo
-The robot from the previous project was utilized here. I did have to adjust the world so that the origin (0,0) was not on anything.
-<p align="center"><img src="/images/robot_gz.png" width="600"></p>
+### Features
+Initially there was a lack of unique features to gain sufficient looop closures so I introduced a bunch of random models into the world which made a substantial difference.
 
-### Landmarks and settings
-Generated the PGM file and associated the corrected messages for localisation.
-<p align="center"><img src="/images/map.png" width="600"></p>
-<p align="center"><img src="/images/Rviz-tools.png" width="300"></p>
+<p align="center"><img src="/images/my_world.png" width="800"></p>
 
-
-### Launch File Setup
-
-I've setup my launch file to include a few of the additional laser settings. I've also elected to rather launch my RViz package from here along with the saved Rviz config. Here is the AMCL launch file.
+### Launch Files
+As instructed in the assignment I have created two launch files. `mapping.launch` and `localization.launch`. The teleop package is launched using the rosrun command as indicated in my intro. Here is a view of the mapping launch file:
 
 ``` XML
 <?xml version="1.0" encoding="UTF-8"?>
+
 <launch>
+  <!-- Arguments for launch file with defaults provided -->
+  <arg name="database_path"     default="rtabmap.db"/>
+  <arg name="rgb_topic"   default="/camera/rgb/image_raw"/>
+  <arg name="depth_topic" default="/camera/depth/image_raw"/>
+  <arg name="camera_info_topic" default="/camera/rgb/camera_info"/>  
 
-  <arg name="map_file" default="$(find my_robot)/maps/map.yaml"/>
 
-  <!-- Run the map server -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
-  
-  <!-- AMCL node -->
-  <node pkg="amcl" type="amcl" name="amcl" output="screen">
-  	<remap from="scan" to="my_robot/laser/scan"/>
+  <!-- Mapping Node -->
+  <group ns="rtabmap">
+    <node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" output="screen" args="--delete_db_on_start">
 
-	<!-- Overall Filter -->
-	<param name="min_particles" value="50"/>
-	<param name="max_particles" value="200"/>
-	<param name="update_min_a" value="0.1"/>
-	<param name="update_min_d" value="0.25"/>
-
-  	<param name="initial_pose_x" value="0.0"/>
-    	<param name="initial_pose_y" value="0.0"/>
-	<param name="initial_pose_a" value="-1.57"/>
-
-	<!-- Laser -->
-	<param name="laser_max_beams" value="20"/>
-	<param name="laser_z_rand" value="0.05"/>
-	<param name="laser_z_hit" value="0.95"/>
-
-	<!-- Odometry configs as per project outline -->
-  	<param name="odom_frame_id" value="odom"/>
-	<param name="odom_model_type" value="diff-corrected"/>
-	<param name="base_frame_id" value="robot_footprint"/>
-	<param name="global_frame_id" value="map"/>
-  
-
-    
-  </node>
-
-  <!-- Move_Base node  -->
-  <node pkg="move_base" type="move_base" name="move_base" respawn="false" output="screen" >
-
-	<remap from="scan" to="my_robot/laser/scan"/>  
-
-	<param name="base_global_planner" value="navfn/NavfnROS" />
-	<param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
+      <!-- Basic RTAB-Map Parameters -->
+      <param name="database_path"       type="string" value="$(arg database_path)"/>
+      <param name="frame_id"            type="string" value="robot_footprint"/>
+      <param name="odom_frame_id"       type="string" value="odom"/>
+      <param name="subscribe_depth"     type="bool"   value="true"/>
+      <param name="subscribe_scan"      type="bool"   value="true"/>
 	
-	<rosparam file="$(find my_robot)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
-	<rosparam file="$(find my_robot)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
-	<rosparam file="$(find my_robot)/config/local_costmap_params.yaml" command="load" />
-	<rosparam file="$(find my_robot)/config/global_costmap_params.yaml" command="load" />
-	<rosparam file="$(find my_robot)/config/base_local_planner_params.yaml" command="load" />
-  </node> 
-  
-  <!--launch rviz -->
-  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d $(find my_robot)/launch/project.rviz"/>
-  
+		<param name="Grid/Range"            type="string" value="10"/>
+
+
+      <!-- RTAB-Map Inputs -->
+      <remap from="scan" to="/my_robot/laser/scan"/>
+      <remap from="rgb/image" to="$(arg rgb_topic)"/>
+      <remap from="depth/image" to="$(arg depth_topic)"/>
+      <remap from="rgb/camera_info" to="$(arg camera_info_topic)"/>
+
+      <!-- RTAB-Map Output -->
+      <remap from="grid_map" to="/map"/>
+
+      <!-- Rate (Hz) at which new nodes are added to map -->
+      <param name="Rtabmap/DetectionRate" type="string" value="3"/>
+
+      <!-- 2D SLAM -->
+      <param name="Reg/Force3DoF" type="string" value="true"/>
+
+      <!-- Loop Closure Detection -->
+      <!-- 0=SURF 1=SIFT 2=ORB 3=FAST/FREAK 4=FAST/BRIEF 5=GFTT/FREAK 6=GFTT/BRIEF 7=BRISK 8=GFTT/ORB 9=KAZE -->
+      <param name="Kp/DetectorStrategy" type="string" value="0"/>
+
+      <!-- Maximum visual words per image (bag-of-words) -->
+      <param name="Kp/MaxFeatures" type="string" value="600"/>
+
+      <!-- Used to extract more or less SURF features -->
+      <param name="SURF/HessianThreshold" type="string" value="80"/>
+
+      <!-- Loop Closure Constraint -->
+      <!-- 0=Visual, 1=ICP (1 requires scan)-->
+      <param name="Reg/Strategy" type="string" value="1"/>
+
+      <!-- Minimum visual inliers to accept loop closure -->
+      <param name="Vis/MinInliers" type="string" value="10"/>
+
+      <!-- Set to false to avoid saving data when robot is not moving -->
+      <param name="Mem/NotLinkedNodesKept" type="string" value="false"/>
+
+	  <!-- Custom parameters -->
+	  <param name="GFTT/MinDistance" type="string" value="10"/>
+	  <param name="Optimizer/Slam2D" value="true" />
+	  <param name="proj_max_ground_angle" value="45"/>
+	  <param name="proj_max_ground_height" value="0.1"/>
+	  <param name="proj_max_height" value="2.0"/>
+      <param name="proj_min_cluster_size" value="20"/>
+
+    </node>
+
+	<!-- visualization with rtabmapviz 
+    <node pkg="rtabmap_ros" type="rtabmapviz" name="rtabmapviz" args="-d $(find rtabmap_ros)/launch/config/rgbd_gui.ini" output="screen">
+        <param name="subscribe_depth"             type="bool" value="true"/>
+        <param name="subscribe_scan"              type="bool" value="true"/>
+        <param name="frame_id"                    type="string" value="robot_footprint"/>
+
+        <remap from="rgb/image"       to="$(arg rgb_topic)"/>
+        <remap from="depth/image"     to="$(arg depth_topic)"/>
+        <remap from="rgb/camera_info" to="$(arg camera_info_topic)"/>
+        <remap from="scan"            to="/my_robot/laser/scan"/>
+		<remap from="odom"            to="/odom"/>
+    </node> -->
+  </group>
 </launch>
 ```
 
-### Config file updates
-In the `base_local_planner_params.yaml` I changed the min and max velocities as well as the pdist and gdist weightings to get more accuracy with the path planner.
-```
-max_vel_x: 0.6 #0.5
-min_vel_x: 0.01 #0.01
-...
-pdist_scale: 2.5  #0.6
-gdist_scale: 2.5  #0.8
-occdist_scale: 0.1 #0.02
-```
-In the `costmap_common_params.yaml` I played with the laser scanning distance, the radius of the robot and the inflation radius for guidance, and obstacle avoidance.
-```
-obstacle_range: 2.5 # 2.0
-raytrace_range: 3.0 # 3.0
-
-transform_tolerance: 0.4 # 0.0
-
-robot_radius: 0.5 # 0.0
-inflation_radius: 0.4 # 0.0
-```
-In the `global_costmap_params.yaml` I changed the update and publish frequencies for better performance and to avoid the "missed loop" error.
-```
-update_frequency: 5.0
-publish_frequency: 2.0
-```
-   
-Lastly in the `local_costmap_params.yaml` I changes the update frequencies and the map size to optimize the short-term planning for the robot.
-```
-update_frequency: 5.0
-publish_frequency: 2.0
-width: 6.0
-height: 6.0
-```
-
-### Obstacle avoidance
-Utilizing good configurations for `radius, inflation radius, pdist and gdist` and then setting up the Costmap PointCloud in RVIZ the robot is able to avoid obstacles.
-<p align="center"><img src="/images/avoid2.png" width="600"></p>
 
 
-### It works!!! :)
-![Robot](/images/demo.gif)
+
+### Loop Closures
+I managed to achieve 84 loop closures. Here is a screenshot of the graph view:
+
+<p align="center"><img src="/images/Graph_view.png" width="800"></p>
+
+The occupency grid map was also generated fairly accurately:
+
+<p align="center"><img src="/images/occupancy_grid_map.png" width="800"></p>
+
+Lastly out of curiosity I genderated the 3D render and after a bit of google time figured out I could use MeshLab to view the 3d file. The results were pretty impressive:
+
+<p align="center"><img src="/images/meshlab_rend.png" width="800"></p>
 
 
-###References
-ROS Wiki</br>
-http://wiki.ros.org/amcl</br>
-http://wiki.ros.org/navigation/Tutorials/RobotSetup</br>
-http://wiki.ros.org/base_local_planner</br>
+###References </br>
+http://wiki.ros.org/rtabmap_ros/Tutorials/Advanced%20Parameter%20Tuning</br>
+https://dabit-industries.github.io/turtlebot2-tutorials/07b-RTABMAP.html</br>
+
 
 
