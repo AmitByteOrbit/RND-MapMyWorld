@@ -125,7 +125,7 @@ Lastly out of curiosity I genderated the 3D render and after a bit of google tim
 <p align="center"><img src="/images/meshlab_rend.png" width="800"></p>
 
 
-###References
+###References </br>
 http://wiki.ros.org/rtabmap_ros/Tutorials/Advanced%20Parameter%20Tuning</br>
 https://dabit-industries.github.io/turtlebot2-tutorials/07b-RTABMAP.html</br>
 
